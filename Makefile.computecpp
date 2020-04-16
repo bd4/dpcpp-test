@@ -1,0 +1,19 @@
+COMPUTE_CPP=/opt/ComputeCpp-CE
+INCLUDES=-I$(COMPUTE_CPP)/include
+LIBS=-L$(COMPUTE_CPP)/lib -lComputeCpp
+
+.PHONY: all
+all: listdev_comp gpuinfo_comp usmvec_comp
+
+listdev_comp: listdev.cxx
+	g++ -std=c++17 $(INCLUDES) $(LIBS) -o $@ $<
+
+gpuinfo_comp: gpuinfo.cxx
+	g++ -std=c++17 $(INCLUDES) $(LIBS) -o $@ $<
+
+usmvec_comp: usmvec.cxx
+	g++ -std=c++17 $(INCLUDES) $(LIBS) -o $@ $<
+
+.PHONY: clean
+clean:
+	rm -rf gpuinfo_comp listdev_comp usmvec_comp
