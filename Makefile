@@ -1,5 +1,5 @@
 .PHONY: all
-all: listdev gpuinfo usmmem usmvec
+all: listdev gpuinfo usmmem usmvec simplebuffer
 
 
 listdev: listdev.cxx
@@ -14,6 +14,9 @@ usmmem: usmmem.cxx
 usmvec: usmvec.cxx
 	dpcpp -std=c++17 -o $@ $<
 
+simplebuffer: simplebuffer.cxx
+	dpcpp -std=c++17 -o $@ $<
+
 .PHONY: clean
 clean:
-	rm -rf gpuinfo listdev usmmem usmvec
+	rm -rf gpuinfo listdev usmmem usmvec simplebuffer
