@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     });
     e0.wait();
 
-    // TODO: why is this needed, e0.wait is not actually waiting?
+    // TODO: fixes race on gpu, cpu and host work as expected
     //std::this_thread::sleep_for(5s);
 
     q.memcpy(h_b.data(), d_b_data, N*sizeof(int));

@@ -1,7 +1,11 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <CL/sycl.hpp>
 #include <CL/sycl/usm.hpp>
+
+using namespace std::chrono_literals;
 
 using namespace cl::sycl;
 
@@ -53,11 +57,15 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    auto event = q.submit([&](handler & cgh) {
+    auto e0 = q.submit([&](handler & cgh) {
         cgh.parallel_for<class FillVector>(range<1>(N), [=](id<1> idx) {
             d_a_ptr[idx] = idx*idx;
         });
     });
+    e0.wait();
+
+    // TODO: fixes race on gpu, cpu and host work as expected
+    //std::this_thread::sleep_for(5s);
 
     q.memcpy(h_a_ptr, d_a_ptr, N*sizeof(int));
     q.wait();
