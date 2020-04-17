@@ -1,7 +1,11 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <CL/sycl.hpp>
 #include <CL/sycl/usm.hpp>
+
+using namespace std::chrono_literals;
 
 using namespace cl::sycl;
 
@@ -52,40 +56,24 @@ int main(int argc, char **argv) {
     using shared_int_vector = std::vector<int,  shared_int_alloc>;
     using host_int_vector = std::vector<int,  host_int_alloc>;
 
-    /*
-    shared_int_array s_b{N, shared_int_alloc(q)};
-    int * s_b_data = s_b.data();
-
-    for (i=0; i<N; i++) {
-        s_b[i] = i;
-    }
-    for (i=0; i<N; i++) {
-        std::cout << i << ": " << s_b_data[i] << endl;
-    }
-    */
-
-    // Q: vector doesn't actually alloc here?
     device_int_vector d_b{N, device_int_alloc(q)};
-    host_int_vector h_b{N, host_int_alloc(q)};
+    // TODO: why doesn't this work?
+    //host_int_vector h_b{N, host_int_alloc(q)};
+    std::vector<int> h_b(N);
 
-    std::cout << "submit d_b init" << std::endl;
-    auto event2 = q.submit([&](handler & cgh) {
-        // Q: buf wrapper doesn't seem to be necessary?
-        //auto buf_b = buffer(d_b.data());
-        //auto acc_b = buf_b.get_access<access::write>(cgh);
-        
-        // Q: forces vector alloc in device context?
-        auto d_b_data = d_b.data();
+    int *d_b_data = d_b.data();
+
+    auto e0 = q.submit([&](handler & cgh) {
         cgh.parallel_for<class DeviceVectorInit>(range<1>(N), [=](id<1> idx) {
-            //acc_b[idx] = idx*idx;
-            //d_b[idx] = idx*idx;
             d_b_data[idx] = idx*idx;
         });
     });
-    event2.wait();
+    e0.wait();
 
-    //std::copy(d_b, h_b);
-    q.memcpy(h_b.data(), d_b.data(), N*sizeof(int));
+    // TODO: why is this needed, e0.wait is not actually waiting?
+    //std::this_thread::sleep_for(5s);
+
+    q.memcpy(h_b.data(), d_b_data, N*sizeof(int));
     q.wait();
 
     for (i=0; i<N; i++) {
