@@ -1,22 +1,21 @@
+CPP = dpcpp
+CPP_FLAGS = -std=c++17
+
+BUILD_DIR=build-intelone
+
+SYCL_SOURCES = $(wildcard *.cxx)
+EXES = $(addprefix $(BUILD_DIR)/,$(basename $(SYCL_SOURCES)))
+
 .PHONY: all
-all: listdev gpuinfo usmmem usmvec simplebuffer
+all: $(EXES)
 
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-listdev: listdev.cxx
-	dpcpp -std=c++17 -o $@ $<
-
-gpuinfo: gpuinfo.cxx
-	dpcpp -std=c++17 -o $@ $<
-
-usmmem: usmmem.cxx
-	dpcpp -std=c++17 -o $@ $<
-
-usmvec: usmvec.cxx
-	dpcpp -std=c++17 -o $@ $<
-
-simplebuffer: simplebuffer.cxx
-	dpcpp -std=c++17 -o $@ $<
+$(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(CPP) $(CPP_FLAGS) -o $@ $<
 
 .PHONY: clean
 clean:
-	rm -rf gpuinfo listdev usmmem usmvec simplebuffer
+	rm -rf $(BUILD_DIR)/*

@@ -1,11 +1,7 @@
-COMPUTE_CPP=/opt/ComputeCpp-CE
-INCLUDES=-I$(COMPUTE_CPP)/include
-LIBS=-L$(COMPUTE_CPP)/lib -lComputeCpp
+CPP = clang++
+CPP_FLAGS = -fsycl
 
-CPP = g++
-CPP_FLAGS = -std=c++17
-
-BUILD_DIR=build-computecpp
+BUILD_DIR=build-llvm
 
 SYCL_SOURCES = $(wildcard *.cxx)
 EXES = $(addprefix $(BUILD_DIR)/,$(basename $(SYCL_SOURCES)))
@@ -18,7 +14,8 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
-	$(CPP) $(CPP_FLAGS) $(INCLUDES) $(LIBS) -o $@ $<
+	$(CPP) $(CPP_FLAGS) -std=c++17 -o $@ $<
+
 
 .PHONY: clean
 clean:
