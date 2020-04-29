@@ -1,0 +1,22 @@
+CPP = syclcc-clang
+CPP_FLAGS =
+
+BUILD_DIR=build-hipsycl
+
+SYCL_SOURCES = $(wildcard *.cxx)
+EXES = $(addprefix $(BUILD_DIR)/,$(basename $(SYCL_SOURCES)))
+
+.PHONY: all
+all: $(EXES)
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(CPP) $(CPP_FLAGS) -std=c++17 -o $@ $<
+
+
+.PHONY: clean
+clean:
+	rm -rf $(BUILD_DIR)/*
