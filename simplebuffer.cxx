@@ -3,7 +3,6 @@
 #include <thread>
 
 #include <CL/sycl.hpp>
-#include <CL/sycl/usm.hpp>
 
 using namespace std::chrono_literals;
 
@@ -58,10 +57,11 @@ int main(int argc, char **argv) {
             auto d_a_write = d_a_buf.get_access<access::mode::discard_write>(cgh);
 
             cgh.parallel_for<class FillVector>(range<1>(N), [=](id<1> idx) {
-                d_a_write[idx] = idx*idx;
+                d_a_write[idx[0]] = idx[0]*idx[0];
             });
         });
     }
+    q.wait();
 
     for (i=0; i<N; i++) {
         std::cout << i << ": " << h_a[i] << std::endl;
