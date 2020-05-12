@@ -3,7 +3,7 @@ CPP_FLAGS = -O2 --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_70
 
 BUILD_DIR=build-hipsycl-cuda
 
-SYCL_SOURCES = $(wildcard *.cxx)
+SYCL_SOURCES = listdev.cxx gpuinfo.cxx simplebuffer.cxx
 EXES = $(addprefix $(BUILD_DIR)/,$(basename $(SYCL_SOURCES)))
 
 .PHONY: all
