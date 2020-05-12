@@ -80,7 +80,7 @@ class binaryclosure {
 };
 
 
-template <typename F, typename E, typename T, typename Arg>
+template <typename F, typename E>
 class binaryexpr {
   public:
     binaryexpr(F&& f, E&& e0, E&& e1)
@@ -89,15 +89,30 @@ class binaryexpr {
       e1_(std::forward<E>(e1))
     {}
 
-    T operator() (Arg arg) {
-      return f_(e0_(arg), e1_(arg));
-    }
+    template <typename Arg>
+    auto operator() (Arg arg);
 
   private:
     F f_;
     E e0_;
     E e1_;
 };
+
+
+template <typename F, typename E>
+template <typename Arg>
+auto binaryexpr<F, E>::operator()(Arg arg) {
+    return f_(e0_(arg), e1_(arg));
+}
+
+
+template <typename F, typename E>
+auto mkexpr(F&& f, E&& e1, E&& e2)
+{
+  return binaryexpr<F, E>(std::forward<F>(f),
+                          std::forward<E>(e1),
+                          std::forward<E>(e2));
+}
 
 
 int main(int argc, char **argv) {
@@ -128,8 +143,7 @@ int main(int argc, char **argv) {
     auto k_fun = binaryclosure<plus<double>, double>(plus<double>{}, 7, 11);
 
     using dfn = constfn<double, size_t>;
-    using plusexpr = binaryexpr<plus<double>, dfn, double, size_t>;
-    auto k_expr = plusexpr(plus<double>{}, dfn{2.0}, dfn{7.5});
+    auto k_expr = mkexpr(plus<double>{}, dfn{2.0}, dfn{7.5});
 
     {
         sycl::buffer<double, 1> buf{h_x.data(), sycl::range<1>{N}};
