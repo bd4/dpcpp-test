@@ -1,5 +1,5 @@
 CPP = dpcpp
-CPP_FLAGS = -std=c++17
+CPP_FLAGS = -std=c++14
 
 BUILD_DIR=build-intelone
 

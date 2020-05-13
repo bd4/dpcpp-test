@@ -50,9 +50,15 @@ int main(int argc, char **argv) {
 
     auto k_fun = binaryclosure<plus<double>, double>(plus<double>{}, 7, 11);
 
-    using dfn = constfn<double, size_t>;
-    auto k_expr = mkexpr(plus<double>{}, dfn{2.0}, dfn{7.5});
+    using dconst = constfn<double, size_t>;
+    using dlinear = linearfn<double, double>;
+    auto k_expr_const = mkexpr(plus<double>{}, dconst{2.0}, dconst{7.5});
+    auto k_expr_linear = mkexpr(plus<double>{}, dlinear{2.0, 1.0},
+                                dlinear{0.0, 7.5});
 
+    // 4x^2
+    auto k_expr_mult = mkexpr(times<double>{}, dlinear{2.0, 0.0},
+                              dlinear{2.0, 0.0});
     {
         sycl::buffer<double, 1> buf{h_x.data(), sycl::range<1>{N}};
         auto e = q.submit([&](sycl::handler &cgh) {
@@ -60,7 +66,7 @@ int main(int argc, char **argv) {
           cgh.parallel_for(sycl::range<1>(N),
           [=](sycl::item<1> item) mutable {
              int i = item.get_linear_id();
-             acc[i] = k_expr(i);
+             acc[i] = k_expr_mult(i);
           });
         });
     }

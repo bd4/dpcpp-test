@@ -28,13 +28,32 @@ class constfn {
 
       constfn(result_type v) : v_(v) {}
 
-      Result operator() (arg_type arg) {
+      result_type operator() (arg_type arg) {
           return v_;
       }
 
     private:
       result_type v_;
 };
+
+
+template <typename Result, typename Arg>
+class linearfn {
+    public:
+      using result_type = Result;
+      using arg_type = Arg;
+
+      linearfn(result_type m, result_type b) : m_(m), b_(b) {}
+
+      result_type operator() (arg_type arg) {
+          return m_ * arg + b_;
+      }
+
+    private:
+      result_type m_;
+      result_type b_;
+};
+
 
 
 template <typename F, typename T>
