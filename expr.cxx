@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
     auto k_expr_const = mkexpr(plus<double>{}, dconst{2.0}, dconst{7.5});
     auto k_expr_linear = mkexpr(plus<double>{}, dlinear{2.0, 1.0},
                                 dlinear{0.0, 7.5});
+    auto k_expr_complex = mkexpr(plus<double>{}, k_expr_const, k_expr_linear);
 
     // 4x^2
     auto k_expr_mult = mkexpr(times<double>{}, dlinear{2.0, 0.0},
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
           cgh.parallel_for(sycl::range<1>(N),
           [=](sycl::item<1> item) mutable {
              int i = item.get_linear_id();
-             acc[i] = k_expr_mult(i);
+             acc[i] = k_expr_complex(i);
           });
         });
     }

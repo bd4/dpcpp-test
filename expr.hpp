@@ -20,6 +20,39 @@ struct times {
 };
 
 
+template <typename DerivedExpression>
+class expression {
+protected:
+  expression() = default;
+
+public:
+  using derived_type = DerivedExpression;
+
+  const derived_type& derived() const&;
+  derived_type& derived() &;
+  derived_type derived() &&;
+};
+
+
+template <typename DerivedExpression>
+inline auto expression<DerivedExpression>::derived() const&
+-> const derived_type& {
+    return static_cast<const derived_type&>(*this);
+}
+
+
+template <typename DerivedExpression>
+inline auto expression<DerivedExpression>::derived() & -> derived_type& {
+    return static_cast<derived_type&>(*this);
+}
+
+
+template <typename DerivedExpression>
+inline auto expression<DerivedExpression>::derived() && -> derived_type {
+    return static_cast<derived_type&&>(*this);
+}
+
+
 template <typename Result, typename Arg>
 class constfn {
     public:
@@ -76,13 +109,22 @@ class binaryclosure {
 };
 
 
-template <typename F, typename E>
-class binaryexpr {
+template <typename F, typename E1, typename E2>
+class binaryexpr;
+
+template <typename F, typename E1, typename E2>
+class binaryexpr : public expression<binaryexpr<F, E1, E2>> {
   public:
-    binaryexpr(F&& f, E&& e0, E&& e1)
+    using self_type = binaryexpr<F, E1, E2>;
+    using base_type = expression<self_type>;
+    using function_type = F;
+    using expression_type_1 = E1;
+    using expression_type_2 = E2;
+
+    binaryexpr(F&& f, E1&& e1, E2&& e2)
     : f_(std::forward<F>(f)),
-      e0_(std::forward<E>(e0)),
-      e1_(std::forward<E>(e1))
+      e1_(std::forward<E1>(e1)),
+      e2_(std::forward<E2>(e2))
     {}
 
     template <typename Arg>
@@ -90,22 +132,22 @@ class binaryexpr {
 
   private:
     F f_;
-    E e0_;
-    E e1_;
+    E1 e1_;
+    E2 e2_;
 };
 
 
-template <typename F, typename E>
+template <typename F, typename E1, typename E2>
 template <typename Arg>
-auto binaryexpr<F, E>::operator()(Arg arg) {
-    return f_(e0_(arg), e1_(arg));
+auto binaryexpr<F, E1, E2>::operator()(Arg arg) {
+    return f_(e1_(arg), e2_(arg));
 }
 
 
-template <typename F, typename E>
-auto mkexpr(F&& f, E&& e1, E&& e2)
+template <typename F, typename E1, typename E2>
+auto mkexpr(F&& f, E1&& e1, E2&& e2)
 {
-  return binaryexpr<F, E>(std::forward<F>(f),
-                          std::forward<E>(e1),
-                          std::forward<E>(e2));
+  return binaryexpr<F, E1, E2>(std::forward<F>(f),
+                               std::forward<E1>(e1),
+                               std::forward<E2>(e2));
 }
