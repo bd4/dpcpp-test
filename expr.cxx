@@ -22,6 +22,7 @@
 
 #include "expr.hpp"
 
+using namespace cl;
 
 int main(int argc, char **argv) {
     constexpr std::size_t N = 16;
@@ -57,7 +58,8 @@ int main(int argc, char **argv) {
     auto k_expr_const = mkexpr(plus<double>{}, dconst{2.0}, dconst{7.5});
     auto k_expr_linear = mkexpr(plus<double>{}, dlinear{2.0, 1.0},
                                 dlinear{0.0, 7.5});
-    auto k_expr_complex = mkexpr(plus<double>{}, k_expr_const, k_expr_linear);
+    auto k_expr_complex = mkexpr(plus<double>{}, std::move(k_expr_const),
+                                 std::move(k_expr_linear));
 
     // 4x^2
     auto k_expr_mult = mkexpr(times<double>{}, dlinear{2.0, 0.0},
@@ -71,8 +73,8 @@ int main(int argc, char **argv) {
           auto acc_x = buf_x.get_access<sycl::access::mode::write>(cgh);
           auto acc_y = buf_y.get_access<sycl::access::mode::write>(cgh);
           auto acc_z = buf_z.get_access<sycl::access::mode::write>(cgh);
-          cgh.parallel_for<class ExprKernel>(sycl::range<1>(N),
-          [=](sycl::item<1> item) mutable {
+          cgh.parallel_for<class ExprTest>(sycl::range<1>(N),
+          [=](sycl::item<1> item) {
              int i = item.get_linear_id();
              acc_x[i] = k_expr_const(i);
              acc_y[i] = k_expr_linear(i);

@@ -1,20 +1,20 @@
 template <typename T>
 struct plus {
-  auto operator()(T left, T right) -> T {
+  auto operator()(T left, T right) const -> T {
     return left + right;
   }
 };
 
 template <typename T>
 struct minus {
-  auto operator()(T left, T right) -> T {
+  auto operator()(T left, T right) const -> T {
     return left + right;
   }
 };
 
 template <typename T>
 struct times {
-  auto operator()(T left, T right) -> T {
+  auto operator()(T left, T right) const -> T {
     return left * right;
   }
 };
@@ -61,7 +61,7 @@ class constfn {
 
       constfn(result_type v) : v_(v) {}
 
-      result_type operator() (arg_type arg) {
+      result_type operator() (arg_type arg) const {
           return v_;
       }
 
@@ -78,7 +78,7 @@ class linearfn {
 
       linearfn(result_type m, result_type b) : m_(m), b_(b) {}
 
-      result_type operator() (arg_type arg) {
+      result_type operator() (arg_type arg) const {
           return m_ * arg + b_;
       }
 
@@ -98,7 +98,7 @@ class binaryclosure {
       arg1_(std::forward<T>(arg1))
     {}
 
-    T operator() () {
+    T operator() () const {
       return f_(arg0_, arg1_);
     }
 
@@ -128,7 +128,7 @@ class binaryexpr : public expression<binaryexpr<F, E1, E2>> {
     {}
 
     template <typename Arg>
-    auto operator() (Arg arg);
+    auto operator() (Arg arg) const;
 
   private:
     F f_;
@@ -139,7 +139,7 @@ class binaryexpr : public expression<binaryexpr<F, E1, E2>> {
 
 template <typename F, typename E1, typename E2>
 template <typename Arg>
-auto binaryexpr<F, E1, E2>::operator()(Arg arg) {
+auto binaryexpr<F, E1, E2>::operator()(Arg arg) const {
     return f_(e1_(arg), e2_(arg));
 }
 
