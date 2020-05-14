@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
           auto acc_x = buf_x.get_access<sycl::access::mode::write>(cgh);
           auto acc_y = buf_y.get_access<sycl::access::mode::write>(cgh);
           auto acc_z = buf_z.get_access<sycl::access::mode::write>(cgh);
-          cgh.parallel_for(sycl::range<1>(N),
+          cgh.parallel_for<class ExprKernel>(sycl::range<1>(N),
           [=](sycl::item<1> item) mutable {
              int i = item.get_linear_id();
              acc_x[i] = k_expr_const(i);

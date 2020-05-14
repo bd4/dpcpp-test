@@ -3,7 +3,7 @@ INCLUDES=-I$(COMPUTE_CPP)/include
 LIBS=-L$(COMPUTE_CPP)/lib -lComputeCpp
 
 CPP = compute++
-CPP_FLAGS = -std=c++14
+CPP_FLAGS = -sycl-driver -sycl-target spirv64 -std=c++14
 
 BUILD_DIR=build-computecpp
 
