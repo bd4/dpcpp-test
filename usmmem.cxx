@@ -3,11 +3,13 @@
 #include <thread>
 
 #include <CL/sycl.hpp>
-#include <CL/sycl/usm.hpp>
+//#include <CL/sycl/usm.hpp>
+#include <SYCL/experimental/usm.h>
 
 using namespace std::chrono_literals;
 
 using namespace cl::sycl;
+using namespace cl::sycl::experimental;
 
 int main(int argc, char **argv) {
     const int N = 32;
@@ -51,7 +53,7 @@ int main(int argc, char **argv) {
     // test sycl usm C based api
     int *h_a_ptr = static_cast<int *>(malloc(N*sizeof(int)));
 
-    int *d_a_ptr = static_cast<int *>(sycl::malloc_device(N*sizeof(int), q));
+    int *d_a_ptr = static_cast<int *>(malloc_device(N*sizeof(int), q));
     if (d_a_ptr == nullptr) {
         std::cout << "Error: unable to allocat device memory" << std::endl;
         return 1;
@@ -59,7 +61,8 @@ int main(int argc, char **argv) {
 
     auto e0 = q.submit([&](handler & cgh) {
         cgh.parallel_for<class FillVector>(range<1>(N), [=](id<1> idx) {
-            d_a_ptr[idx] = idx*idx;
+            int i = idx[0];
+            d_a_ptr[i] = i*i;
         });
     });
     e0.wait();
@@ -74,7 +77,7 @@ int main(int argc, char **argv) {
         std::cout << i << ": " << h_a_ptr[i] << std::endl;
     }
 
-    sycl::free(d_a_ptr, q);
+    sycl::experimental::free(d_a_ptr, q);
     free(h_a_ptr);
 
     return 0;
