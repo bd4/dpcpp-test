@@ -1,16 +1,15 @@
 COMPUTE_CPP=/opt/ComputeCpp-CE
 INCLUDES=-I$(COMPUTE_CPP)/include
-LIBS=
-#-L$(COMPUTE_CPP)/lib -lComputeCpp
+LIBS=-L$(COMPUTE_CPP)/lib -lComputeCpp
 
 SYCL_TARGET=spirv64
 CPP = compute++
 #CPP_FLAGS = -sycl-driver -sycl-target $(SYCL_TARGET) -std=c++14
-CPP_FLAGS = -sycl-driver -std=c++14
+CPP_FLAGS = -sycl-driver -std=c++14 -DCOMPUTECPP_USM
 
 BUILD_DIR=build-computecpp
 
-SYCL_SOURCES = $(wildcard *.cxx)
+SYCL_SOURCES = listdev.cxx gpuinfo.cxx simplebuffer.cxx expr.cxx usmmem.cxx usmvec.cxx
 EXES = $(addprefix $(BUILD_DIR)/,$(basename $(SYCL_SOURCES)))
 
 .PHONY: all

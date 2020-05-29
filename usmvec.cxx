@@ -2,12 +2,19 @@
 #include <chrono>
 #include <thread>
 
+#ifdef COMPUTECPP_USM
+#include <SYCL/experimental/usm_wrapper.h>
 #include <CL/sycl.hpp>
-#include <CL/sycl/usm.hpp>
-
-using namespace std::chrono_literals;
+#include <SYCL/experimental.hpp>
 
 using namespace cl::sycl;
+using namespace cl::sycl::experimental;
+#else
+#include <CL/sycl.hpp>
+using namespace cl::sycl;
+#endif
+
+using namespace std::chrono_literals;
 
 int main(int argc, char **argv) {
     const int N = 32;
@@ -62,10 +69,16 @@ int main(int argc, char **argv) {
     std::vector<int> h_b(N);
 
     int *d_b_data = d_b.data();
+#ifdef COMPUTECPP_USM
+    auto d_b_acc = usm_wrapper<int>(d_b_data);
+#else
+    auto d_b_acc = d_b_data;
+#endif
 
     auto e0 = q.submit([&](handler & cgh) {
         cgh.parallel_for<class DeviceVectorInit>(range<1>(N), [=](id<1> idx) {
-            d_b_data[idx] = idx*idx;
+            int i = idx[0];
+            d_b_acc[i] = i*i;
         });
     });
     e0.wait();

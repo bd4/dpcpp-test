@@ -2,14 +2,19 @@
 #include <chrono>
 #include <thread>
 
+#ifdef COMPUTECPP_USM
+#include <SYCL/experimental/usm_wrapper.h>
 #include <CL/sycl.hpp>
-//#include <CL/sycl/usm.hpp>
-#include <SYCL/experimental/usm.h>
-
-using namespace std::chrono_literals;
+#include <SYCL/experimental.hpp>
 
 using namespace cl::sycl;
 using namespace cl::sycl::experimental;
+#else
+#include <CL/sycl.hpp>
+using namespace cl::sycl;
+#endif
+
+using namespace std::chrono_literals;
 
 int main(int argc, char **argv) {
     const int N = 32;
@@ -53,16 +58,22 @@ int main(int argc, char **argv) {
     // test sycl usm C based api
     int *h_a_ptr = static_cast<int *>(malloc(N*sizeof(int)));
 
-    int *d_a_ptr = static_cast<int *>(malloc_device(N*sizeof(int), q));
+#ifdef COMPUTECPP_USM
+    auto d_a_ptr = malloc_device<int>(N, q);
+    auto d_a_ptr_capture = usm_wrapper<int>{d_a_ptr};
+#else
+    auto d_a_ptr = malloc_device<int>(N, q);
     if (d_a_ptr == nullptr) {
         std::cout << "Error: unable to allocat device memory" << std::endl;
         return 1;
     }
+    auto d_a_ptr_capture = d_a_ptr;
+#endif
 
     auto e0 = q.submit([&](handler & cgh) {
         cgh.parallel_for<class FillVector>(range<1>(N), [=](id<1> idx) {
             int i = idx[0];
-            d_a_ptr[i] = i*i;
+            d_a_ptr_capture[i] = i*i;
         });
     });
     e0.wait();
@@ -77,7 +88,11 @@ int main(int argc, char **argv) {
         std::cout << i << ": " << h_a_ptr[i] << std::endl;
     }
 
+#ifdef COMPUTECPP_USM
     sycl::experimental::free(d_a_ptr, q);
+#else
+    sycl::free(d_a_ptr, q);
+#endif
     free(h_a_ptr);
 
     return 0;
