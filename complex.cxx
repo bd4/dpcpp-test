@@ -6,6 +6,10 @@
 
 using namespace cl::sycl;
 
+namespace kernels {
+class array_op_kernel {};
+}  // namespace kernels
+
 int main(int argc, char **argv) {
     constexpr int N = 16;
     using dcomplex = std::complex<double>;
@@ -66,10 +70,11 @@ int main(int argc, char **argv) {
             auto d_c_write =
                 d_c_buf.get_access<access::mode::discard_write>(cgh);
 
-            cgh.parallel_for<class FillVector>(range<1>(N), [=](id<1> idx) {
-                int i = idx[0];
-                d_c_write[i] = d_a_read[i] OP d_b_read[i];
-            });
+            cgh.parallel_for<kernels::array_op_kernel>(
+                range<1>(N), [=](id<1> idx) {
+                    int i = idx[0];
+                    d_c_write[i] = d_a_read[i] OP d_b_read[i];
+                });
         });
     }
     q.wait();
