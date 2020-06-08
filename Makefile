@@ -1,4 +1,4 @@
-CPP = dpcpp
+CPP ?= dpcpp
 CPP_FLAGS = -std=c++14
 
 # See

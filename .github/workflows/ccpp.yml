@@ -12,7 +12,7 @@ jobs:
     #container: intel/oneapi-basekit:devel-ubuntu18.04
     container: ubuntu:18.04
     env:
-      CXX: /opt/intel/inteloneapi/compiler/latest/linux/bin/dpcpp
+      CPP: /opt/intel/inteloneapi/compiler/latest/linux/bin/dpcpp
       DPCPP_ROOT: /opt/intel/inteloneapi
       INTEL_LICENSE_FILE: /opt/intel/inteloneapi/compiler/latest/licensing
       LD_LIBRARY_PATH: /opt/intel/inteloneapi/compiler/latest/linux/lib:/opt/intel/inteloneapi/compiler/latest/linux/lib/x64:/opt/intel/inteloneapi/compiler/latest/linux/compiler/lib/intel64_lin:/opt/intel/inteloneapi/compiler/latest/linux/compiler/lib:/opt/intel/inteloneapi/ccl/2021.1-beta06/lib/cpu_gpu_dpcpp
@@ -35,8 +35,6 @@ jobs:
         echo "libintelocl.so" > /etc/OpenCL/vendors/intel-cpu.icd
         clinfo
     - name: make
-      run: make GTENSOR_CXX=${{ env.CXX }}
+      run: make
     - name: listdev
       run: ./build-intelone/listdev
-    - name: gpuinfo
-      run: ./build-intelone/gpuinfo
