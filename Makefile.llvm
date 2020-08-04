@@ -1,5 +1,16 @@
-CPP = clang++
-CPP_FLAGS = -fsycl
+CPP ?= clang++
+CPP_FLAGS = -fsycl -std=c++14
+
+# See
+# https://github.com/jinge90/llvm/blob/sycl/sycl/doc/extensions/C-CXX-StandardLibrary/DeviceLibExtensions.rst
+# and
+# https://github.com/jinge90/llvm/blob/sycl/sycl/test/devicelib/std_complex_math_fp64_test.cpp
+DPCPP_LIBDIR ?= /opt/isycl/lib
+DPCPP_OBJS = libsycl-complex-fp64.o libsycl-cmath-fp64.o
+LIBS = $(addprefix $(DPCPP_LIBDIR)/,$(DPCPP_OBJS))
+DPCPP_INCDIR ?= /opt/isycl/include/sycl
+
+CPP_FLAGS += -I$(DPCPP_INCDIR)
 
 BUILD_DIR=build-llvm
 
@@ -14,8 +25,7 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
-	$(CPP) $(CPP_FLAGS) -std=c++17 -o $@ $<
-
+	$(CPP) $(CPP_FLAGS) -o $@ $< $(LIBS)
 
 .PHONY: clean
 clean:

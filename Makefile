@@ -1,13 +1,14 @@
-CPP ?= dpcpp
-CPP_FLAGS = -std=c++14
+CPP = dpcpp
+CPP_FLAGS = -std=c++14 -lOpenCL -lsycl
+COMPLEX_FLAGS = -device-math-lib=fp32,fp64
 
 # See
 # https://github.com/jinge90/llvm/blob/sycl/sycl/doc/extensions/C-CXX-StandardLibrary/DeviceLibExtensions.rst
 # and
 # https://github.com/jinge90/llvm/blob/sycl/sycl/test/devicelib/std_complex_math_fp64_test.cpp
-ONEAPI_LIBDIR=/opt/intel/inteloneapi/compiler/latest/linux/lib
-ONEAPI_OBJS = libsycl-complex-fp64.o libsycl-cmath-fp64.o
-LIBS = $(addprefix $(ONEAPI_LIBDIR)/,$(ONEAPI_OBJS))
+#DPCPP_LIBDIR ?= /opt/intel/inteloneapi/compiler/latest/linux/lib
+#DPCPP_OBJS = libsycl-complex-fp64.o libsycl-cmath-fp64.o
+#LIBS = $(addprefix $(DPCPP_LIBDIR)/,$(DPCPP_OBJS))
 
 BUILD_DIR=build-intelone
 
@@ -23,6 +24,10 @@ $(BUILD_DIR):
 $(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
 	$(CPP) $(CPP_FLAGS) -o $@ $< $(LIBS)
+
+$(BUILD_DIR)/complex : complex.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(CPP) $(CPP_FLAGS) $(COMPLEX_FLAGS) -o $@ $< $(LIBS)
 
 .PHONY: clean
 clean:
