@@ -38,10 +38,4 @@ jobs:
     - name: run listdev
       run: ./build-intelone/listdev
     - name: run simplebuffer
-      run: ./build-intelone/simplebuffer
-    - name: run expr
-      run: ./build-intelone/expr
-    - name: run usmmem
-      run: ./build-intelone/usmmem
-    - name: run complex
-      run: ./build-intelone/complex
+      run: ./build-intelone/simplebuffer host
