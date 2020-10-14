@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define OP *
+#define OP_STR " * "
 
 using namespace cl::sycl;
 
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
     q.wait();
 
     for (i = 0; i < N; i++) {
-        std::cout << i << ": " << h_a[i] << " OP " << h_b[i]
+        std::cout << i << ": " << h_a[i] << OP_STR << h_b[i]
                   << " = " << h_c[i] << std::endl;
     }
 
