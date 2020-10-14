@@ -151,3 +151,6 @@ auto mkexpr(F&& f, E1&& e1, E2&& e2)
                                std::forward<E1>(e1),
                                std::forward<E2>(e2));
 }
+
+template <typename Expr>
+class SyclKernel;
