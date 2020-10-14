@@ -10,8 +10,8 @@
 using namespace cl::sycl;
 using namespace cl::sycl::experimental;
 #else
-#include <SYCL/sycl.hpp>
-using namespace sycl;
+#include <CL/sycl.hpp>
+using namespace cl::sycl;
 #endif
 
 using namespace std::chrono_literals;
