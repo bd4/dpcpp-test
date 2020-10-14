@@ -12,8 +12,7 @@ jobs:
     #container: intel/oneapi-basekit:devel-ubuntu18.04
     container: ubuntu:18.04
     env:
-      CPP: /opt/intel/oneapi/compiler/latest/linux/bin/dpcpp
-      DPCPP_ROOT: /opt/intel/oneapi
+      ONEAPI_ROOT: /opt/intel/oneapi
       INTEL_LICENSE_FILE: /opt/intel/oneapi/compiler/latest/licensing
       LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/latest/linux/lib:/opt/intel/oneapi/compiler/latest/linux/lib/x64:/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/compiler/latest/linux/compiler/lib:/opt/intel/oneapi/ccl/2021.1-beta09/lib/cpu_gpu_dpcpp
 
