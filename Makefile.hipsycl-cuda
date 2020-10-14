@@ -1,5 +1,5 @@
 CPP = syclcc
-CPP_FLAGS = -O2 --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_61
+CPP_FLAGS = -O2 --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_60
 
 BUILD_DIR=build-hipsycl-cuda
 

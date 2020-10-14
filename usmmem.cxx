@@ -12,6 +12,7 @@ using namespace cl::sycl::experimental;
 #else
 #include <CL/sycl.hpp>
 using namespace cl::sycl;
+namespace sycl = cl::sycl;
 #endif
 
 using namespace std::chrono_literals;
