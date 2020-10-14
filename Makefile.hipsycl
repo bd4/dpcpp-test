@@ -1,4 +1,4 @@
-CPP = syclcc-clang
+CPP = syclcc
 CPP_FLAGS = -O2 --hipsycl-platform=rocm --hipsycl-gpu-arch=gfx803
 
 BUILD_DIR=build-hipsycl
