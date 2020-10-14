@@ -1,5 +1,5 @@
-CPP = dpcpp
-CPP_FLAGS = -std=c++14 -lOpenCL -lsycl
+SYCL_CXX ?= $(ONEAPI_ROOT)/compiler/latest/linux/bin/dpcpp
+SYCL_CXX_FLAGS = -std=c++17
 COMPLEX_FLAGS = -device-math-lib=fp32,fp64
 
 # See
@@ -23,12 +23,12 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/% : %.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
-	$(CPP) $(CPP_FLAGS) -o $@ $< $(LIBS)
+	$(SYCL_CXX) $(SYCL_CXX_FLAGS) -o $@ $< $(LIBS)
 
 $(BUILD_DIR)/complex : complex.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
-	$(CPP) $(CPP_FLAGS) $(COMPLEX_FLAGS) -o $@ $< $(LIBS)
+	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) -o $@ $< $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)/*
+	rm -f $(BUILD_DIR)/*
