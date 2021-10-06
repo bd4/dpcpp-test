@@ -1,6 +1,7 @@
 name: C/C++ CI CPU
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master ]
   pull_request:
