@@ -6,7 +6,7 @@
 
 using namespace std::chrono_literals;
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(int argc, char **argv) {
     constexpr int N = 16;
@@ -15,20 +15,20 @@ int main(int argc, char **argv) {
 
     std::string arg_device_type;
     if (argc < 2) {
-        arg_device_type = "gpu";
+        arg_device_type = "default";
     } else {
         arg_device_type = argv[1];
     }
 
     queue q;
     if (arg_device_type == "cpu") {
-        q = queue( cpu_selector() );
+        q = queue( cpu_selector{} );
     } else if (arg_device_type == "gpu") {
-        q = queue( gpu_selector() );
-    } else if (arg_device_type == "host") {
-        q = queue( host_selector() );
+        q = queue( gpu_selector{} );
+    } else if (arg_device_type == "default") {
+        q = queue( default_selector{} );
     } else {
-        std::cout << "Usage: " << argv[0] << " cpu|gpu|host" << std::endl;
+        std::cout << "Usage: " << argv[0] << " cpu|gpu|default" << std::endl;
         return 1;
     }
 

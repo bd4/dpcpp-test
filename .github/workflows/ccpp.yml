@@ -17,11 +17,6 @@ jobs:
       LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/latest/linux/lib:/opt/intel/oneapi/compiler/latest/linux/lib/x64:/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/compiler/latest/linux/compiler/lib
 
     steps:
-    - name: clinfo
-      run: |
-        mkdir -p /etc/OpenCL/vendors
-        echo "libintelocl.so" > /etc/OpenCL/vendors/intel-cpu.icd
-        clinfo
     - name: sycl-ls
       run: |
         /opt/intel/oneapi/compiler/latest/linux/bin/sycl-ls
@@ -32,4 +27,6 @@ jobs:
     - name: run listdev
       run: ./build-intelone/listdev
     - name: run simplebuffer
-      run: ./build-intelone/simplebuffer host
+      run: ./build-intelone/simplebuffer
+    - name: run lambda_kname_param
+      run: ./build-intelone/lambda_kname_param
