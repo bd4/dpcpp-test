@@ -29,6 +29,7 @@ int main() {
             std::cout << "  [" << type << "] "
                       << dev.get_info<info::device::name>()
                       << " {" << dev.get_info<info::device::vendor>() << "}"
+                      << " (" << dev.get_info<info::device::vendor_id>() << ")"
                       << std::endl;
         }
     }

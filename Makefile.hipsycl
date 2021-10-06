@@ -1,5 +1,5 @@
 CPP = syclcc
-CPP_FLAGS = -O2 --hipsycl-platform=rocm --hipsycl-gpu-arch=gfx803
+CPP_FLAGS = -O2 --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_61 --cuda-path=/opt/cuda/10.0 -L /opt/cuda/10.0/lib64 -v
 
 BUILD_DIR=build-hipsycl
 
