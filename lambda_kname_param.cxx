@@ -78,6 +78,9 @@ int main(int argc, char **argv) {
               << std::endl;
 
     index_op_kernel(q, N, h_a, [=](int i) { return i*i; });
+
+    int b = 10;
+    index_op_kernel(q, N, h_a, [=](int i) { return b*i; });
     /*
     {
         // scope for device vector, to force synchronize at the end and allow
