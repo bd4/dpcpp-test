@@ -22,7 +22,7 @@ void index_op_kernel(queue& q, int n, int *h_a, F&& op) {
             auto d_a_write = d_a_buf.get_access<access::mode::discard_write>(cgh);
 
             using kname = KernelOp<decltype(op)>;
-            cgh.parallel_for<>(range<1>(n), [=](id<1> idx) {
+            cgh.parallel_for<kname>(range<1>(n), [=](id<1> idx) {
                 d_a_write[idx[0]] = op(idx[0]);
             });
         });
