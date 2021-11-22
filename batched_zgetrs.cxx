@@ -129,6 +129,7 @@ void test(cl::sycl::queue q) {
 
     struct timespec start, end;
     double elapsed, total = 0.0;
+    double total_strided = 0.0;
     int *info, info_sum;
 
     auto trans_op = oneapi::mkl::transpose::nontrans;
@@ -136,7 +137,13 @@ void test(cl::sycl::queue q) {
           q, &trans_op, &n, &nrhs, &lda, &ldb, 1, &batch_size);
     auto scratch = cl::sycl::malloc_device<CT>(scratch_count, q);
 
+    auto scratch_count2 = oneapi::mkl::lapack::getrs_batch_scratchpad_size<CT>(
+          q, trans_op, n, nrhs, lda, n*n, n, ldb, n*nrhs, batch_size);
+    auto scratch2 = cl::sycl::malloc_device<CT>(scratch_count2, q);
+
+
     for (int i=0; i<NRUNS; i++) {
+        /*
         // std::cout << "run [" << i << "]: start" << std::endl;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -150,6 +157,26 @@ void test(cl::sycl::queue q) {
         if (i > 0)
             total += elapsed;
         std::cout << "run [" << i << "]: " << elapsed << std::endl;
+        */
+
+        clock_gettime(CLOCK_MONOTONIC, &start);
+
+        try {
+        auto e2 = oneapi::mkl::lapack::getrs_batch(
+          q, trans_op, n, nrhs, d_Adata, lda, n*n, d_piv, n, d_Bdata, ldb,
+          n*nrhs, batch_size, scratch2, scratch_count2);
+        e2.wait();
+        } catch(oneapi::mkl::lapack::invalid_argument const &e) {
+            std::cerr << e.what() << " arg #: "
+                      << e.info() << std::endl;
+        }
+
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1.0e-9;
+        if (i > 0)
+            total_strided += elapsed;
+        std::cout << "run s [" << i << "]: " << elapsed << std::endl;
+
     }
 
     std::cout << "zgetrs done (avg " << total / (NRUNS-1) << ")" << std::endl;
@@ -200,9 +227,24 @@ void test(cl::sycl::queue q) {
     std::cout << "free done" << std::endl;
 }
 
+inline auto get_exception_handler()
+{
+  static auto exception_handler = [](cl::sycl::exception_list exceptions) {
+    for (std::exception_ptr const& e : exceptions) {
+      try {
+        std::rethrow_exception(e);
+      } catch (cl::sycl::exception const& e) {
+        std::cerr << "Caught asynchronous SYCL exception:" << std::endl
+                  << e.what() << std::endl;
+        abort();
+      }
+    }
+  };
+  return exception_handler;
+}
 
 int main(int argc, char **argv) {
-    auto q = cl::sycl::queue{};
+    auto q = cl::sycl::queue{get_exception_handler()};
     auto dev = q.get_device();
     std::string type;
     if (dev.is_cpu()) {
