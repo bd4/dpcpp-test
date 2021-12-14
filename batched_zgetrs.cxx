@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <numeric>
+#include <string>
 #include <time.h>
 
 #define NRUNS 10
@@ -26,9 +27,9 @@ inline void read_iarray(std::ifstream& f, int n, int *data) {
 }
 
 template <typename T>
-void test(cl::sycl::queue q) {
+void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=384) {
 
-    index_t n, nrhs, lda, ldb, batch_size;
+    index_t lda, ldb;
     int Aptr_count, Bptr_count, Adata_count, Bdata_count, piv_count;
     std::complex<T> **h_Aptr, **d_Aptr, **h_Bptr, **d_Bptr;
     std::complex<T> *h_Adata, *d_Adata, *h_Bdata, *d_Bdata;
@@ -47,11 +48,8 @@ void test(cl::sycl::queue q) {
     f >> batch_size;
 
 #else
-    n = 140;
-    nrhs = 1;
     lda = n;
     ldb = n;
-    batch_size = 384;
 #endif
 
     std::cout << "n    = " << n    << std::endl;
@@ -143,7 +141,6 @@ void test(cl::sycl::queue q) {
 
 
     for (int i=0; i<NRUNS; i++) {
-        /*
         // std::cout << "run [" << i << "]: start" << std::endl;
         clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -156,8 +153,7 @@ void test(cl::sycl::queue q) {
         elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1.0e-9;
         if (i > 0)
             total += elapsed;
-        std::cout << "run [" << i << "]: " << elapsed << std::endl;
-        */
+        std::cout << "run group  [" << i << "]: " << elapsed << std::endl;
 
         clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -175,11 +171,11 @@ void test(cl::sycl::queue q) {
         elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1.0e-9;
         if (i > 0)
             total_strided += elapsed;
-        std::cout << "run s [" << i << "]: " << elapsed << std::endl;
-
+        std::cout << "run stride [" << i << "]: " << elapsed << std::endl;
     }
 
-    std::cout << "zgetrs done (avg " << total / (NRUNS-1) << ")" << std::endl;
+    std::cout << "zgetrs done (avg group  " << total / (NRUNS-1) << ")" << std::endl;
+    std::cout << "            (avg stride " << total_strided / (NRUNS-1) << ")" << std::endl;
 
 #ifndef READ_INPUT
     // check result
@@ -261,8 +257,22 @@ int main(int argc, char **argv) {
               << " {" << dev.get_info<cl::sycl::info::device::vendor>() << "}"
               << std::endl;
 
+    index_t n = 140;
+    index_t nrhs = 1;
+    index_t batch_size = 384;
+
+    if (argc > 1) {
+        n = std::stoi(argv[1]);
+    }
+    if (argc > 2) {
+        nrhs = std::stoi(argv[2]);
+    }
+    if (argc > 2) {
+        batch_size = std::stoi(argv[3]);
+    }
+
     std::cout << "==== float  ====" << std::endl;
-    test<float>(q);
+    test<float>(q, n, nrhs, batch_size);
     //std::cout << "==== double  ====" << std::endl;
     //test<double>(q);
 }
