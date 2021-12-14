@@ -4,6 +4,7 @@
 #include <sstream>
 #include <numeric>
 #include <string>
+#include <typeinfo>
 #include <time.h>
 
 #define NRUNS 10
@@ -96,7 +97,8 @@ void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=3
     std::ostringstream ss;
     std::string run_label;
 
-    ss << n << "x" << n << ";nrhs=" << nrhs << ";batches=" << batch_size;
+    ss << "n=" << n << ";nrhs=" << nrhs << ";batches=" << batch_size
+       << ";t=" << typeid(T).name();
     run_label = ss.str();
     
     q.fill<CT>(h_Adata, CT(0.0, 0.0), Adata_count);
@@ -281,6 +283,6 @@ int main(int argc, char **argv) {
 
     std::cout << "==== float  ====" << std::endl;
     test<float>(q, n, nrhs, batch_size);
-    //std::cout << "==== double  ====" << std::endl;
-    //test<double>(q);
+    std::cout << "==== double  ====" << std::endl;
+    test<double>(q, n, nrhs, batch_size);
 }
