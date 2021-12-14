@@ -1,6 +1,7 @@
 #include <complex>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <numeric>
 #include <string>
 #include <time.h>
@@ -92,6 +93,12 @@ void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=3
     read_iarray(f, n*batch_size, h_piv);
     f.close();
 #else
+    std::ostringstream ss;
+    std::string run_label;
+
+    ss << n << "x" << n << ";nrhs=" << nrhs << ";batches=" << batch_size;
+    run_label = ss.str();
+    
     q.fill<CT>(h_Adata, CT(0.0, 0.0), Adata_count);
     q.fill<CT>(h_Bdata, CT(0.0, 0.0), Bdata_count);
     q.wait();
@@ -174,8 +181,9 @@ void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=3
         std::cout << "run stride [" << i << "]: " << elapsed << std::endl;
     }
 
-    std::cout << "zgetrs done (avg group  " << total / (NRUNS-1) << ")" << std::endl;
-    std::cout << "            (avg stride " << total_strided / (NRUNS-1) << ")" << std::endl;
+    std::cout << "zgetrs done" << std::endl;
+    std::cout << run_label << " avg group  " << total / (NRUNS-1)         << std::endl;
+    std::cout << run_label << " avg stride " << total_strided / (NRUNS-1) << std::endl;
 
 #ifndef READ_INPUT
     // check result
