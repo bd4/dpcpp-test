@@ -124,12 +124,12 @@ void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=3
 
     std::cout << "read/init done" << std::endl;
 
-    q.copy(d_Aptr, h_Aptr, Aptr_count);
-    q.copy(d_Adata, h_Adata, Adata_count);
-    q.copy(d_Bptr, h_Bptr, Bptr_count);
-    q.copy(d_Bdata, h_Bdata, Bdata_count);
-    q.copy(d_piv_ptr, h_piv_ptr, batch_size);
-    q.copy(d_piv, h_piv, piv_count);
+    q.copy(h_Aptr, d_Aptr, Aptr_count);
+    q.copy(h_Adata, d_Adata, Adata_count);
+    q.copy(h_Bptr, d_Bptr, Bptr_count);
+    q.copy(h_Bdata, d_Bdata, Bdata_count);
+    q.copy(h_piv_ptr, d_piv_ptr, batch_size);
+    q.copy(h_piv, d_piv, piv_count);
     q.wait();
 
     std::cout << "memcpy done" << std::endl;
@@ -189,7 +189,7 @@ void test(cl::sycl::queue q, index_t n=140, index_t nrhs=1, index_t batch_size=3
 
 #ifndef READ_INPUT
     // check result
-    q.copy(h_Bdata, d_Bdata, Bdata_count);
+    q.copy(d_Bdata, h_Bdata, Bdata_count);
     q.wait();
     bool ok = true;
     CT err = CT(0.0, 0.0);
