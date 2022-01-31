@@ -77,8 +77,8 @@ struct sycl_spmatrix_lu<T> create_batched_lu_spmatrix(
         }
     }
 
-    std::cout << "L nnz " << lu.L.nnz << std::endl;
-    std::cout << "U nnz " << lu.U.nnz << std::endl;
+    //std::cout << "L nnz " << lu.L.nnz << std::endl;
+    //std::cout << "U nnz " << lu.U.nnz << std::endl;
 
     lu.L.nrows = lu.U.nrows = nrows * batch_size;
     lu.U.ncols = lu.U.ncols = ncols * batch_size;
@@ -105,17 +105,17 @@ struct sycl_spmatrix_lu<T> create_batched_lu_spmatrix(
                 if (value != 0) {
                     if (i < j) {
                         lu.L.values[L_val_i] = value;
-                        lu.L.col_ind[L_val_i] = j;
+                        lu.L.col_ind[L_val_i] = b * ncols + j;
                         if (!L_row_set) {
-                            lu.L.row_ptr[i] = L_val_i;
+                            lu.L.row_ptr[b * nrows + i] = L_val_i;
                             L_row_set = true;
                         }
                         L_val_i++;
                     } else {
                         lu.U.values[U_val_i] = value;
-                        lu.U.col_ind[U_val_i] = j;
+                        lu.U.col_ind[U_val_i] = b * ncols + j;
                         if (!U_row_set) {
-                            lu.U.row_ptr[i] = U_val_i;
+                            lu.U.row_ptr[b * nrows + i] = U_val_i;
                             U_row_set = true;
                         }
                         U_val_i++;
@@ -124,8 +124,8 @@ struct sycl_spmatrix_lu<T> create_batched_lu_spmatrix(
             }
         }
     }
-    lu.L.row_ptr[nrows] = lu.L.nnz;
-    lu.U.row_ptr[nrows] = lu.U.nnz;
+    lu.L.row_ptr[batch_size * nrows] = lu.L.nnz;
+    lu.U.row_ptr[batch_size * nrows] = lu.U.nnz;
 
     return lu;
 }
@@ -218,16 +218,11 @@ void test(cl::sycl::queue q, index_t n = 140, index_t nrhs = 1,
     }
     */
 
-    // 2's on diag, 1's in last row (except for bottom right which is 2).
+    // 2's on diag
     for (int b = 0; b < batch_size; b++) {
         for (int i = 0; i < n; i++) {
             h_Adata[b * n * n + i * n + i] = T(2.0);
         }
-        /*
-        for (int i = 0; i < n - 1; i++) {
-            h_Adata[b * n * n + i * n + n - 1] = T(1.0);
-        }
-        */
     }
 
     // for collecting pointers to pointers
@@ -405,12 +400,28 @@ void test(cl::sycl::queue q, index_t n = 140, index_t nrhs = 1,
     // Solve batched A * x = b in two steps with A = L U
     //   solve L * x1 = b
     //   solve U * x2 = x1
-    std::cout << "back sub" << std::endl;
+    std::cout << "forward sub" << std::endl;
     oneapi::mkl::sparse::trsv(q, oneapi::mkl::uplo::lower,
                               oneapi::mkl::transpose::nontrans,
                               oneapi::mkl::diag::unit, L_handle, b, x1);
     q.wait();
-    std::cout << "forward sub" << std::endl;
+    /*
+    for (int b = 0; b < batch_size; b++) {
+        for (int i = 0; i < n; i++) {
+            std::cout << b << " " << i << " :" << x1[b*n+i] << std::endl;
+        }
+    }
+    for (int b = 0; b < batch_size; b++) {
+        for (int i = 0; i < n; i++) {
+            std::cout << "U: " << b << " " << i << " :" << splu.U.values[b*n+i]
+                      << " [" << splu.U.col_ind[b*n+i] << "]" << std::endl;
+        }
+    }
+    for (int r = 0; r < splu.U.nrows + 1; r++) {
+        std::cout << "U.row_ptr " << r << " " << splu.U.row_ptr[r] << std::endl;
+    }
+    */
+    std::cout << "backward sub" << std::endl;
     oneapi::mkl::sparse::trsv(q, oneapi::mkl::uplo::upper,
                               oneapi::mkl::transpose::nontrans,
                               oneapi::mkl::diag::nonunit, U_handle, x1, x2);
@@ -422,6 +433,7 @@ void test(cl::sycl::queue q, index_t n = 140, index_t nrhs = 1,
     correct_value = T(0.0);
     for (int b = 0; b < batch_size; b++) {
         for (int i = 0; i < n; i++) {
+            //std::cout << b << " " << i << " :" << x2[b*n+i] << std::endl;
             correct_value = T(0.5);
             err = x2[b * n + i] - correct_value;
             if (std::abs(err) > 0.0) {
