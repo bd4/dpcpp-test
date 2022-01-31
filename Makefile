@@ -2,7 +2,8 @@ SYCL_CXX ?= $(ONEAPI_ROOT)/compiler/latest/linux/bin/dpcpp
 MKL_ROOT ?= $(ONEAPI_ROOT)/mkl/latest
 SYCL_CXX_FLAGS = -std=c++17
 COMPLEX_FLAGS = -device-math-lib=fp32,fp64
-MKL_FLAGS = -DMKL_ILP64 -I$(MKL_ROOT)/include -L$(MKL_ROOT)/lib/intel64 -lmkl_sycl -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core
+#MKL_FLAGS = -DMKL_ILP64 -I$(MKL_ROOT)/include -L$(MKL_ROOT)/lib/intel64 -lmkl_sycl -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core
+MKL_FLAGS = -I$(MKL_ROOT)/include -L$(MKL_ROOT)/lib/intel64 -lmkl_sycl -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
 
 # See
 # https://github.com/jinge90/llvm/blob/sycl/sycl/doc/extensions/C-CXX-StandardLibrary/DeviceLibExtensions.rst
@@ -34,6 +35,14 @@ $(BUILD_DIR)/complex : complex.cxx | $(BUILD_DIR)
 $(BUILD_DIR)/batched_zgetrs : batched_zgetrs.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
 	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) $(MKL_FLAGS) -o $@ $< $(LIBS)
+
+$(BUILD_DIR)/sparse_solve_npvt : sparse_solve.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) $(MKL_FLAGS) -DNOPIVOT -DOLD_NAME -o $@ $< $(LIBS)
+
+$(BUILD_DIR)/sparse_solve : sparse_solve.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) $(MKL_FLAGS) -DOLD_NAME -o $@ $< $(LIBS)
 
 .PHONY: clean
 clean:
