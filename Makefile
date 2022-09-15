@@ -48,6 +48,10 @@ $(BUILD_DIR)/batched_fft : batched_fft.cxx | $(BUILD_DIR)
 	@echo "Compiling "$<
 	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) $(MKL_FLAGS) -o $@ $< $(LIBS)
 
+$(BUILD_DIR)/bench_sparse : bench_sparse.cxx | $(BUILD_DIR)
+	@echo "Compiling "$<
+	$(SYCL_CXX) $(SYCL_CXX_FLAGS) $(COMPLEX_FLAGS) $(MKL_FLAGS) -o $@ $< $(LIBS)
+
 .PHONY: clean
 clean:
 	rm -f $(BUILD_DIR)/*
