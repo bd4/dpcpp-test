@@ -66,7 +66,7 @@ struct sycl_spmatrix_lu<T> create_batched_lu_spmatrix(
         for (int j = 0; j < ncols; j++) {
             for (int i = 0; i < nrows; i++) {
                 idx = b * nrows * ncols + j * nrows + i;
-                if (data[idx] != 0) {
+                if (data[idx] != T(0)) {
                     if (i < j) {
                         lu.L.nnz++;
                     } else {
@@ -102,7 +102,7 @@ struct sycl_spmatrix_lu<T> create_batched_lu_spmatrix(
             U_row_set = false;
             for (int j = 0; j < ncols; j++) {
                 T value = data[b * nrows * ncols + j * nrows + i];
-                if (value != 0) {
+                if (value != T(0)) {
                     if (i < j) {
                         lu.L.values[L_val_i] = value;
                         lu.L.col_ind[L_val_i] = b * ncols + j;
@@ -512,8 +512,8 @@ int main(int argc, char **argv) {
         batch_size = std::stoi(argv[3]);
     }
 
-    // std::cout << "==== std::complex<float>  ====" << std::endl;
-    // test<std::complex<float>>(q, n, nrhs, batch_size);
     std::cout << "==== float  ====" << std::endl;
     test<float>(q, n, nrhs, batch_size);
+    std::cout << "==== std::complex<float>  ====" << std::endl;
+    test<std::complex<float>>(q, n, nrhs, batch_size);
 }
