@@ -15,12 +15,14 @@
 using complex_t = std::complex<double>;
 const complex_t h_one = 1.0;
 
+using spindex_t = std::int32_t;
+
 struct problem {
   int nrows;
   int nnz;
   int nrhs;
-  std::int64_t *row_ptr;
-  std::int64_t *col_ind;
+  spindex_t *row_ptr;
+  spindex_t *col_ind;
   complex_t *val;
   complex_t *rhs;
   complex_t *sol1;
@@ -37,14 +39,14 @@ struct problem read_problem(sycl::queue &q) {
   f >> p.nrows;
   std::cout << "nrows " << p.nrows << std::endl;
   n = (p.nrows + 1);
-  p.row_ptr = sycl::malloc_shared<std::int64_t>(n, q);
+  p.row_ptr = sycl::malloc_shared<spindex_t>(n, q);
   for (int i = 0; i < p.nrows + 1; i++) {
     f >> p.row_ptr[i];
   }
   f >> p.nnz;
   std::cout << "nnz " << p.nnz << std::endl;
   n = p.nnz;
-  p.col_ind = sycl::malloc_shared<std::int64_t>(n, q);
+  p.col_ind = sycl::malloc_shared<spindex_t>(n, q);
   n = p.nnz;
   p.val = sycl::malloc_shared<complex_t>(n, q);
   for (int i = 0; i < p.nnz; i++) {
@@ -71,10 +73,10 @@ struct problem problem_to_device(sycl::queue &q, struct problem p) {
   struct problem d_p;
   size_t n;
 
-  d_p.row_ptr = sycl::malloc_device<std::int64_t>(p.nrows + 1, q);
+  d_p.row_ptr = sycl::malloc_device<spindex_t>(p.nrows + 1, q);
   q.copy(p.row_ptr, d_p.row_ptr, p.nrows + 1);
 
-  d_p.col_ind = sycl::malloc_device<std::int64_t>(p.nnz, q);
+  d_p.col_ind = sycl::malloc_device<spindex_t>(p.nnz, q);
   q.copy(p.col_ind, d_p.col_ind, p.nnz);
 
   d_p.val = sycl::malloc_device<complex_t>(p.nnz, q);
