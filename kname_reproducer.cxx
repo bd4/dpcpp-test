@@ -21,14 +21,6 @@ struct KName;
 } // namespace gt
 
 
-template <typename T>
-struct plus {
-  auto operator()(T left, T right) const -> T {
-    return left + right;
-  }
-};
-
-
 template <typename DerivedExpression>
 class expression {
 protected:
@@ -62,49 +54,6 @@ inline auto expression<DerivedExpression>::derived() && -> derived_type {
 }
 
 
-template <typename F, typename E1, typename E2>
-class binaryexpr;
-
-template <typename F, typename E1, typename E2>
-class binaryexpr : public expression<binaryexpr<F, E1, E2>> {
-  public:
-    using self_type = binaryexpr<F, E1, E2>;
-    using base_type = expression<self_type>;
-    using function_type = F;
-    using expression_type_1 = E1;
-    using expression_type_2 = E2;
-
-    binaryexpr(F&& f, E1&& e1, E2&& e2)
-    : f_(std::forward<F>(f)),
-      e1_(std::forward<E1>(e1)),
-      e2_(std::forward<E2>(e2))
-    {}
-
-    template <typename Arg>
-    auto operator() (Arg arg) const;
-
-  private:
-    F f_;
-    E1 e1_;
-    E2 e2_;
-};
-
-
-template <typename F, typename E1, typename E2>
-template <typename Arg>
-auto binaryexpr<F, E1, E2>::operator()(Arg arg) const {
-    return f_(e1_(arg), e2_(arg));
-}
-
-
-template <typename F, typename E1, typename E2>
-auto mkexpr(F&& f, E1&& e1, E2&& e2)
-{
-  return binaryexpr<F, E1, E2>(std::forward<F>(f),
-                               std::forward<E1>(e1),
-                               std::forward<E2>(e2));
-}
-
 template <typename T>
 class container : public expression<container<T>> {
   public:
@@ -129,6 +78,9 @@ class container : public expression<container<T>> {
 
 template <typename E1, typename E2>
 class Assign1;
+
+// Note: passing expressions by value works
+// void assign(E1 lhs, const E2 rhs, sycl::queue &q)
 
 template <typename E1, typename E2>
 void assign(E1 &lhs, const E2& rhs, sycl::queue &q)
@@ -168,17 +120,25 @@ void test() {
     auto A = container<T>(N, Adata);
     auto Bdata = sycl::malloc_shared<T>(N, q);
     auto B = container<T>(N, Bdata);
-    auto Cdata = sycl::malloc_shared<T>(N, q);
-    auto C = container<T>(N, Cdata);
 
     for (int i = 0; i < N; i++) {
       B[i] = T{1.0 * i};
-      C[i] = T{1.0 * i};
     }
 
-    auto k_expr_containers = mkexpr(plus<T>{}, std::move(B), std::move(C));
-
-    assign(C, k_expr_containers, q);
+    assign(A, B, q);
+    
+    /*
+    std::size_t size = A.size();
+    auto e = q.submit([&](sycl::handler& cgh) {
+      using ltype = decltype(A);
+      using rtype = decltype(B);
+      using kname = Assign1<ltype, rtype>;
+      cgh.parallel_for<kname>(sycl::range<1>(size), [=](sycl::item<1> item) {
+        auto i = item.get_id();
+        A(i) = B(i);
+      });
+    });
+    */
 }
 
 int main(int argc, char **argv) {
